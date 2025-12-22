@@ -1,0 +1,111 @@
+body {
+  background-image: url(https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Finite_subdivision_of_a_radial_link.png/250px-Finite_subdivision_of_a_radial_link.png);
+  background-repeat: repeat;
+}
+
+.container {
+  overflow: hidden;
+  padding: 10px;
+}
+
+.block {
+  width: 20%;
+  margin: 15px;
+  padding: 20px;
+  float: left;
+  border-style: solid;
+  border-radius: 2px;
+  border-color: #ffffff;
+}
+
+img {
+  width: 80%;
+  height: 100px;
+  margin: 15px auto;
+}
+
+#block_1 {
+  background-color: rgba(255, 224, 178, 0.6);
+}
+
+#letter_1 {
+  color: #0d47a1;
+}
+
+#text_1 {
+  color: #1565c0;
+}
+
+#block_2 {
+  background-color: rgba(178, 223, 219, 0.6);
+}
+
+#letter_2 {
+  color: #e65100;
+}
+
+#text_2 {
+  color: #ef6c00;
+}
+
+#block_3 {
+  background-color: rgba(255, 204, 188, 0.6);
+}
+
+#letter_3 {
+  color: #006064;
+}
+
+#text_3 {
+  color: #00838f;
+}
+
+#block_4 {
+  background-color: rgba(255, 249, 196, 0.6);
+}
+
+#letter_4 {
+  color: #4a148c;
+}
+
+#text_4 {
+  color: #6a1b9a;
+}
+
+.gradient_block {
+  clear: both;
+  width: 40%;
+  background-color: rgba(255, 255, 255, 0.6);
+  margin: 20px auto;
+  text-align: center;
+  padding: 20px;
+  border-style: solid;
+  border-radius: 2px;
+  border-color: #ffffff;
+}
+
+table {
+  width: 100%;
+}
+
+table td {
+  width: 50%;
+  height: 150px;
+  text-align: center;
+}
+
+.gr_1 {
+  background: linear-gradient(to right, #ffe0b2, #b2dfdb);
+}
+
+.gr_2 {
+  background: radial-gradient(circle, #ffccbc, #fff9c4);
+}
+
+.gr_3 {
+  background: repeating-linear-gradient(45deg, #ffccbc, #ffe0b2 15px, #b2dfdb 15px, #fff9c4 30px);
+}
+
+.gr_4 {
+  background: repeating-radial-gradient(circle, #ffccbc, #ffe0b2 15px, #b2dfdb 15px, #fff9c4 30px);
+}

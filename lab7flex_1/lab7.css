@@ -1,0 +1,89 @@
+.flex-wrapper,
+.flex-wrapper>div,
+.flex-wrapper>div>div {
+  display: flex;
+  gap: 10px
+}
+
+.flex-wrapper {
+  background: white;
+  min-height: 1100px;
+  width: 90%;
+  margin: auto;
+}
+
+.left_container,
+.right_container {
+  flex-direction: column;
+}
+
+.left_container {
+  flex: 2;
+}
+
+.right_container {
+  flex: 1;
+}
+
+.ltop {
+  flex: 2;
+}
+
+#ltsmall {
+  flex: 1;
+}
+
+#ltbig {
+  flex: 3;
+}
+
+.lcenter_1, .lcenter_2 {
+  flex: 1;
+}
+
+.lc {
+  flex: 0 1 calc(25% - 7.5px);
+  aspect-ratio: 1 / 1;
+}
+
+.lbottom {
+  flex: 1.5;
+}
+
+.lb {
+  flex: 1;
+}
+
+.rtop {
+  flex: 1.5;
+}
+
+#rt {
+  flex: 1;
+}
+
+.rcenter {
+  flex: 3;
+  flex-wrap: wrap;
+}
+
+.rc {
+  flex: 1 0 45%;
+}
+
+.rbottom {
+  flex: 3;
+}
+
+#rb {
+  flex: 1;
+}
+
+.box {
+  background-color: #d192d3;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}

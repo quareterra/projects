@@ -1,0 +1,213 @@
+body {
+    font-size: 18pt;
+    background-image: url('./bg.png');
+    background-size: cover;
+    color: #cfd8dc;
+    margin: 0;
+    padding-bottom: 50px;
+}
+
+::selection {
+    color: lime;
+    background: black;
+}
+
+q {
+    quotes: "«" "»" "„" "“" "‘" "’";
+}
+
+q.eng-single {
+    quotes: "‘" "’";
+}
+
+q.de {
+    quotes: "»" "«";
+}
+
+q.simple {
+    quotes: "\"" "\"";
+}
+
+q.eng-double {
+    quotes: "“" "”";
+}
+
+q.eng-double-strange {
+    quotes: "”" "”";
+}
+
+.outer-1 {
+    background-color: #263238;
+    margin-left: 100px;
+    height: 300px;
+    overflow-y: scroll;
+    line-height: 300px;
+    font-size: 0;
+    white-space: nowrap;
+}
+
+.inner-1 {
+    display: inline-block;
+    vertical-align: middle;
+    width: 300px;
+    font-size: 18pt;
+    line-height: normal;
+    white-space: normal;
+    background-color: #2e3538;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 2px solid #000000;
+    margin-left: 50px;
+}
+
+.inner-1.b1 {
+    margin-left: 0;
+}
+
+.inner-1 span {
+    display: block;
+}
+
+.inner-1::first-letter {
+    font-size: 150%;
+    color: #465e43;
+    float: left;
+    margin-right: 5px;
+}
+
+.inner-1::after {
+    display: block;
+    margin-top: 15px;
+    padding: 5px;
+    border-top: 3px solid #000000;
+    line-height: 2;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    color: #eceff1;
+}
+
+.inner-1.b1::after {
+    content: "Хитроумные азиаты, впрочем, изобрели еще несколько типов кавычек, европейцам неизвестных.";
+    background-color: #465e43;
+}
+
+.inner-1.b2::after {
+    content: "Разве что в текстовых процессорах — они вставляют кавычки должного вида сами, автоматически, если иное не указано в опциях.";
+    background-color: #455a64;
+}
+
+.inner-1.b3::after {
+    content: "Примечательно, пожалуй, то, что даже обычные кавычки, выглядящие как обращенные навстречу друг другу пары поднятых вверх запятых, с тем же успехом могут выглядеть и как обращенные друг к другу поднятые вверх круглые елочки.";
+    background-color: #443f57;
+    color: #fff;
+}
+
+.outer-2 {
+    background-color: #2b2830;
+    width: 1400px;
+    margin-top: 20px;
+    margin-left: 100px;
+    font-size: 0;
+    padding: 20px 0;
+}
+
+.inner-2 {
+    display: inline-block;
+    vertical-align: top;
+    width: 300px;
+    height: 300px;
+    overflow-y: scroll;
+    font-size: 18pt;
+    background-color: #2e3538;
+    box-sizing: border-box;
+    padding: 10px;
+    border: 2px solid #000000;
+    margin-left: 50px;
+}
+
+.inner-2.b1 {
+    margin-left: 0;
+}
+
+.inner-2 span {
+    display: block;
+}
+
+.inner-2::first-line {
+    font-size: 200%;
+    color: #9fa8da;
+}
+
+.inner-2::before {
+    display: block;
+    border-bottom: 3px solid #000000;
+    margin-bottom: 15px;
+    padding: 5px;
+    font-style: italic;
+    background-color: #3949ab;
+    color: #e8eaf6;
+}
+
+.inner-2.b1::before {
+    content: "При книгопечатании тоже сначала по-всякому крутили запятые, но постепенно история развития книгопечатных шрифтов привела к тому, что стали разрабатываться свои собственные печатные знаки для каждой задачи.";
+}
+
+.inner-2.b2::before {
+    content: "Двойная симметричная кавычка нашла в русском языке и ещё одно применение — ей иногда заменяли твёрдый знак.";
+}
+
+.inner-2.b3::before {
+    content: "В 20-х годах прошлого века такое использование кавычки имело место и в газетах и прочих печатных изданиях.";
+}
+
+.outer-3 {
+    background-color: #2d2826;
+    width: 80%;
+    margin-left: 10%;
+    margin-right: 10%;
+    margin-top: 20px;
+    box-shadow: 10px 10px 5px rgba(0,0,0,0.6);
+    padding-bottom: 20px;
+    overflow: auto;
+}
+
+.inner-3 {
+    background-color: #2e3538;
+    width: 40%;
+    float: left;
+    box-sizing: border-box;
+    padding: 2.5%;
+    border: 2px solid #000000;
+}
+
+.inner-3.b1 {
+    margin-left: 2%;
+}
+
+.inner-3.b2 {
+    margin-left: 4%;
+}
+
+.outer-3 p {
+    display: list-item;
+    list-style-type: none;
+    text-align: center;
+    list-style-position: inside;
+    margin: 10px 0;
+}
+
+.outer-3 h3 {
+    text-align: center;
+    color: #ffffff;
+}
+
+.inner-3.b1 p::marker {
+    content: "\2333  ";
+    color: #ffffff;
+    font-size: 16pt;
+}
+
+.inner-3.b2 p::marker {
+    content: "\2222  ";
+    color: #ffffff;
+    font-size: 16pt;
+}
