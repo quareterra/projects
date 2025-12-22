@@ -1,61 +1,102 @@
 <!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="UTF-8">
   <title>lab7</title>
   <link rel="stylesheet" href="lab7.css">
 </head>
-
 <body>
-  <div class="flex-wrapper">
+  <div class="flex_wrapper">
     <div class="left_container">
       <div class="ltop">
-        <div id="ltsmall" class="box">Content</div>
-        <div id="ltbig" class="box">Content</div>
+        <div id="ltsmall" class="box">
+          <h3>NASA Images</h3>
+          <ul>
+            <li><a href="#">Wolf-Rayet Apep</a></li>
+            <li><a href="#">Sagittarius B2</a></li>
+            <li><a href="#">Sombrero Galaxy</a></li>
+          </ul>
+        </div>
+        <div id="ltbig" class="box">
+          <h3>Project Details</h3>
+          <p>This layout uses nested flexbox rows to create a strictly aligned bento grid without using the wrap property.</p>
+        </div>
       </div>
 
-      <div class="lcenter_1">
-        <div class="lc box">Content</div>
-        <div class="lc box">Content</div>
-        <div class="lc box">Content</div>
-        <div class="lc box">Content</div>
+      <div class="lcenter_group">
+        <div class="grid_row">
+          <div class="lc box"><img src="https://placehold.co/200?text=1"></div>
+          <div class="lc box"><img src="https://placehold.co/200?text=2"></div>
+          <div class="lc box"><img src="https://placehold.co/200?text=3"></div>
+          <div class="lc box"><img src="https://placehold.co/200?text=4"></div>
+        </div>
+        <div class="grid_row">
+          <div class="lc box"><img src="https://placehold.co/200?text=5"></div>
+          <div class="lc box"><img src="https://placehold.co/200?text=6"></div>
+          <div class="lc box"><img src="https://placehold.co/200?text=7"></div>
+          <div class="lc box"><img src="https://placehold.co/200?text=8"></div>
+        </div>
       </div>
-      <div class="lcenter_2">
-        <div class="lc box">Content</div>
-        <div class="lc box">Content</div>
-        <div class="lc box">Content</div>
-        <div class="lc box">Content</div>
-      </div>
-
 
       <div class="lbottom">
-        <div class="lb box">Content</div>
-        <div class="lb box">Content</div>
+        <div class="lb box">
+          <p>Grid system: Flexbox</p>
+          <p>Font: JetBrains Mono</p>
+        </div>
+        <div class="lb box">
+          <p>Primary color: #342f4d</p>
+          <p>Background: #000000</p>
+        </div>
       </div>
     </div>
 
     <div class="right_container">
       <div class="rtop">
-        <div id="rt" class="box">Content</div>
+        <div id="rt" class="box">
+          <h3>Status</h3>
+          <p>Terminal: Active</p>
+        </div>
       </div>
 
-      <div class="rcenter">
-        <div class="rc box">Content</div>
-        <div class="rc box">Content</div>
-        <div class="rc box">Content</div>
-        <div class="rc box">Content</div>
-        <div class="rc box">Content</div>
-        <div class="rc box">Content</div>
-
+      <div class="rcenter_group">
+        <div class="grid_row">
+          <div class="rc box">CPU: 12%</div>
+          <div class="rc box">RAM: 4.2GB</div>
+        </div>
+        <div class="grid_row">
+          <div class="rc box">NET: 100Mb</div>
+          <div class="rc box">GPU: 01%</div>
+        </div>
+        <div class="grid_row">
+          <div class="rc box">DISK: 22%</div>
+          <div class="rc box">TEMP: 42C</div>
+        </div>
       </div>
 
       <div class="rbottom">
-        <div id="rb" class="box">Content</div>
+        <div id="rb" class="box">
+          <h3>Specifications</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Module</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Layout</td>
+                <td>Nested Flex</td>
+              </tr>
+              <tr>
+                <td>Language</td>
+                <td>HTML/CSS</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
-
     </div>
   </div>
 </body>
-
 </html>
