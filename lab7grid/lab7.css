@@ -1,0 +1,178 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 20px;
+  background-color: #000000;
+  margin: 0;
+  padding: 20px;
+}
+
+.grid_wrapper {
+  display: grid;
+  grid-template-columns: 1150px 570px;
+  gap: 10px;
+  min-height: 1100px;
+  width: 90%;
+  margin: auto;
+  padding: 10px;
+}
+
+.left_container {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 10px;
+}
+
+.right_container {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  gap: 10px;
+}
+
+.ltop {
+  display: grid;
+  grid-template-columns: 280px 860px;
+  gap: 10px;
+}
+
+.lcenter {
+  display: grid;
+  grid-template-columns: repeat(4, 280px);
+  grid-template-rows: repeat(2, 280px);
+  gap: 10px;
+}
+
+.lbottom {
+  display: grid;
+  grid-template-columns: 570px 570px;
+  gap: 10px;
+}
+
+.rtop {
+  display: grid;
+}
+
+.rcenter {
+  display: grid;
+  grid-template-columns: repeat(2, 280px);
+  grid-auto-rows: 135px;
+  gap: 10px;
+}
+
+.rbottombox {
+  display: grid;
+}
+
+#ltsmall {
+  height: 450px;
+  width: 280px;
+}
+
+#ltbig {
+  width: 860px;
+}
+
+.lc {
+  height: 280px;
+  width: 280px;
+}
+
+.lb,
+#rt {
+  width: 570px;
+  height: 305px;
+}
+
+.rc {
+  font-size: 0.9em;
+  text-align: center;
+  width: 280px;
+  height: 135px;
+}
+
+#rb {
+  display: flex;
+  flex-direction: column;
+  overflow: scroll;
+  height: 595px;
+  width: 570px;
+}
+
+.box {
+  background-color: #342f4d;
+  border-radius: 6px;
+  padding: 15px;
+  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.box:hover {
+  background-color: #271f3d;
+}
+
+table {
+  width: 100%;
+  font-size: 0.8em;
+}
+
+th,
+td {
+  border: 2px solid #90f9f9;
+  padding: 8px;
+  text-align: left;
+}
+
+.table_1 tr:first-child {
+  height: 60px;
+}
+
+img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 2px;
+  border-style: solid;
+  border-color: #000000;
+}
+
+a {
+  color: white;
+}
+
+a:hover {
+  text-decoration: underline;
+  color: #a2f2f0;
+}
+
+ul {
+  padding: 20px;
+}
+
+.gradient {
+  width: 100%;
+  height: 8%;
+  border-style: solid;
+  border-radius: 2px;
+  background-image: linear-gradient(to right, red, orange, yellow, green, blue, purple);
+}
+
+#table_container {
+  overflow: scroll;
+  max-height: 180px;
+  border-radius: 2px;
+  border-style: solid;
+  padding: 2px;
+}
+
+.lb p {
+  font-size: 50px;
+  text-align: center;
+  opacity: 0.6;
+}
