@@ -40,7 +40,7 @@ div {
   float: left;
   width: 560px;
   height: 560px;
-  margin: 0 0 0 23px;
+  margin-left: 23px;
   padding: 0 12px;
   border: 4px dashed blue;
   border-radius: 20px;
@@ -84,6 +84,10 @@ div {
   font-family: Georgia, serif;
   font-size: 13px;
   color: #330033;
+}
+
+#defloater {
+  clear: both;
 }
 
 table {
