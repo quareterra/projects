@@ -136,7 +136,13 @@ ul {
   border-style: solid;
   border-radius: 2px;
   background-image: linear-gradient(to right, red, orange, yellow, green, blue, purple);
+  transition: background-image 0.9s ease-in-out;
 }
+
+.gradient:hover {
+  background-image: linear-gradient(to right, red, red, orange, orange, yellow, green, blue, purple);
+}
+
 
 #table_container {
   overflow: scroll;
