@@ -84,6 +84,26 @@ func getOwnerByPLayer(playerptr *Player) *Player {
 	return nil
 }
 
+func getIdleButtons() tgbotapi.InlineKeyboardMarkup {
+	createRoomButton := tgbotapi.NewInlineKeyboardButtonData("create", "createRoom")
+	joinRoomButton := tgbotapi.NewInlineKeyboardButtonData("join", "joinRoom")
+	buttons := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(createRoomButton, joinRoomButton))
+	return buttons
+}
+
+func getInRoomIdleButtons() tgbotapi.InlineKeyboardMarkup {
+	readyButton := tgbotapi.NewInlineKeyboardButtonData("ready", "ready")
+	leaveRoomButton := tgbotapi.NewInlineKeyboardButtonData("leave", "leaveRoom")
+	buttons := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(readyButton, leaveRoomButton))
+	return buttons
+}
+
+func getInRoomReadyButtons() tgbotapi.InlineKeyboardMarkup {
+	leaveRoomButton := tgbotapi.NewInlineKeyboardButtonData("leave", "leaveRoom")
+	buttons := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(leaveRoomButton))
+	return buttons
+}
+
 func getPlayerCountByOwner(ownerptr *Player) (playerCount int) {
 	for i := range players {
 		if players[i].room == (*ownerptr).id {
@@ -160,7 +180,7 @@ func getPlayersByOwner(ownerptr *Player) (playersInRoom []*Player) {
 	return
 }
 
-func getMessagesToAll(ownerptr *Player, messageText string) (messages []tgbotapi.MessageConfig) {
+func getSameMessagesToAll(ownerptr *Player, messageText string) (messages []tgbotapi.MessageConfig) {
 	playersInRoom := getPlayersByOwner(ownerptr)
 	for i := range playersInRoom {
 		messages = append(messages, tgbotapi.NewMessage(playersInRoom[i].id, messageText))
@@ -168,7 +188,20 @@ func getMessagesToAll(ownerptr *Player, messageText string) (messages []tgbotapi
 	return messages
 }
 
-func getRoleMessagesToAll()
+func getRoleMessagesToAll(ownerptr *Player) (messages []tgbotapi.MessageConfig) {
+	playersInRoom := getPlayersByOwner(ownerptr)
+
+	for _, p := range playersInRoom {
+		var text string
+		if p.role == MafiaRole {
+			text = "game started \n your role: mafia"
+		} else {
+			text = "game started \n your role: civilian"
+		}
+		messages = append(messages, tgbotapi.NewMessage(p.id, text))
+	}
+	return messages
+}
 
 func createRoom(playerptr *Player) *Room {
 	if (*playerptr).room == 0 {
@@ -271,10 +304,7 @@ func main() {
 
 					if roomptr != nil {
 						response.Text = fmt.Sprintf("Created room %d", (*roomptr).id)
-						readyButton := tgbotapi.NewInlineKeyboardButtonData("ready", "ready")
-						leaveRoomButton := tgbotapi.NewInlineKeyboardButtonData("leave", "leaveRoom")
-						buttons := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(readyButton, leaveRoomButton))
-						response.ReplyMarkup = buttons
+						response.ReplyMarkup = getInRoomIdleButtons()
 					} else {
 						response.Text = "error creating room"
 					}
@@ -285,20 +315,14 @@ func main() {
 						response.Text = "enter room id"
 					} else {
 						response.Text = "already in room"
-						createRoomButton := tgbotapi.NewInlineKeyboardButtonData("create", "createRoom")
-						joinRoomButton := tgbotapi.NewInlineKeyboardButtonData("join", "joinRoom")
-						buttons := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(createRoomButton, joinRoomButton))
-						response.ReplyMarkup = buttons
+						response.ReplyMarkup = getIdleButtons()
 					}
 				}
 
 			case JoiningRoomState:
 				changeStateToIdle(playerptr)
 				response.Text = "cancelled join"
-				createRoomButton := tgbotapi.NewInlineKeyboardButtonData("create", "createRoom")
-				joinRoomButton := tgbotapi.NewInlineKeyboardButtonData("join", "joinRoom")
-				buttons := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(createRoomButton, joinRoomButton))
-				response.ReplyMarkup = buttons
+				response.ReplyMarkup = getIdleButtons()
 
 			case InRoomIdleState:
 				switch playerQuery {
@@ -316,7 +340,7 @@ func main() {
 						}
 						if canGameStart(ownerptr) {
 							startGameByOwner(ownerptr)
-							messagesToAll := getRoleMessagesToAll(ownerptr, "game started, your role is:")
+							messagesToAll := getRoleMessagesToAll(ownerptr)
 							for i := range messagesToAll {
 								if _, err := bot.Send(messagesToAll[i]); err != nil {
 									fmt.Println("error sending message", err)
@@ -327,9 +351,7 @@ func main() {
 					}
 
 					response.Text = "wait for game to start"
-					leaveRoomButton := tgbotapi.NewInlineKeyboardButtonData("leave", "leaveRoom")
-					buttons := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(leaveRoomButton))
-					response.ReplyMarkup = buttons
+					response.ReplyMarkup = getInRoomReadyButtons()
 
 				case "leaveRoom":
 					if ownerptr := getOwnerByPLayer(playerptr); ownerptr != nil {
@@ -343,10 +365,7 @@ func main() {
 					}
 
 					response.Text = "you left the room"
-					createRoomButton := tgbotapi.NewInlineKeyboardButtonData("create", "createRoom")
-					joinRoomButton := tgbotapi.NewInlineKeyboardButtonData("join", "joinRoom")
-					buttons := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(createRoomButton, joinRoomButton))
-					response.ReplyMarkup = buttons
+					response.ReplyMarkup = getIdleButtons()
 				}
 			case InRoomReadyState:
 				if playerQuery == "leaveRoom" {
@@ -361,10 +380,7 @@ func main() {
 					}
 					leaveRoom(playerptr)
 					response.Text = "you left the room"
-					createRoomButton := tgbotapi.NewInlineKeyboardButtonData("create", "createRoom")
-					joinRoomButton := tgbotapi.NewInlineKeyboardButtonData("join", "joinRoom")
-					buttons := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(createRoomButton, joinRoomButton))
-					response.ReplyMarkup = buttons
+					response.ReplyMarkup = getIdleButtons()
 				} else {
 					response.Text = "wait for game to start"
 				}
@@ -385,24 +401,15 @@ func main() {
 					}
 
 					response.Text = "room entered"
-					readyButton := tgbotapi.NewInlineKeyboardButtonData("ready", "ready")
-					leaveRoomButton := tgbotapi.NewInlineKeyboardButtonData("leave", "leaveRoom")
-					buttons := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(readyButton, leaveRoomButton))
-					response.ReplyMarkup = buttons
+					response.ReplyMarkup = getInRoomIdleButtons()
 				} else {
 					changeStateToIdle(playerptr)
 					response.Text = "error invalid id"
-					createRoomButton := tgbotapi.NewInlineKeyboardButtonData("create", "createRoom")
-					joinRoomButton := tgbotapi.NewInlineKeyboardButtonData("join", "joinRoom")
-					buttons := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(createRoomButton, joinRoomButton))
-					response.ReplyMarkup = buttons
+					response.ReplyMarkup = getIdleButtons()
 				}
 			case IdleState:
 				response.Text = "create or join room"
-				createRoomButton := tgbotapi.NewInlineKeyboardButtonData("create", "createRoom")
-				joinRoomButton := tgbotapi.NewInlineKeyboardButtonData("join", "joinRoom")
-				buttons := tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(createRoomButton, joinRoomButton))
-				response.ReplyMarkup = buttons
+				response.ReplyMarkup = getIdleButtons()
 			default:
 				response.Text = "error"
 			}
