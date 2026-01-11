@@ -8,15 +8,19 @@ import (
 )
 
 type Room struct {
-	id int64
+	id   int64
+	turn int
+	actedUpon []*Player
 }
 
 type Player struct {
-	id    int64
-	name  string
-	room  int64
-	state State
-	role  Role
+	id        int64
+	name      string
+	room      int64
+	state     State
+	role      Role
+	didAction bool
+	alive bool
 }
 
 var (
@@ -59,26 +63,28 @@ func handleCallback(bot *tgbotapi.BotAPI, callback *tgbotapi.CallbackQuery) {
 		if playerptr.state == IdleState {
 			room := createRoom(playerptr)
 			response.Text = fmt.Sprintf("room ID: %d", room.id)
-			response.ReplyMarkup = getKeyboard(playerptr.state)
+			response.ReplyMarkup = getRoomKeyboard(playerptr.state)
 		}
 
 	case BtnJoin:
 		if playerptr.state == IdleState {
 			playerptr.state = JoiningRoomState
 			response.Text = "enter room id"
-			response.ReplyMarkup = getKeyboard(playerptr.state)
+			response.ReplyMarkup = getRoomKeyboard(playerptr.state)
 		}
 
 	case BtnLeave:
 		if playerptr.state == InRoomIdleState || playerptr.state == InRoomReadyState {
-			sendMessageToOwner(bot, getOwnerByPLayer(playerptr), "leave", playerptr)
+			if !isOwner(playerptr) {
+				sendMessageToOwner(bot, getOwnerByPLayer(playerptr), "leave", playerptr)
+			}
 			leaveRoom(playerptr)
 			response.Text = "you left the room"
-			response.ReplyMarkup = getKeyboard(playerptr.state)
+			response.ReplyMarkup = getRoomKeyboard(playerptr.state)
 		} else if playerptr.state == JoiningRoomState {
 			playerptr.state = IdleState
 			response.Text = "canceled"
-			response.ReplyMarkup = getKeyboard(playerptr.state)
+			response.ReplyMarkup = getRoomKeyboard(playerptr.state)
 		}
 
 	case BtnReady:
@@ -89,6 +95,11 @@ func handleCallback(bot *tgbotapi.BotAPI, callback *tgbotapi.CallbackQuery) {
 			if canGameStart(ownerptr) {
 				startGameByOwner(bot, ownerptr)
 			}
+		}
+
+	default:
+	if playerptr.state == InGameState {
+			inGameAction(bot, playerptr, callback)
 		}
 	}
 
@@ -108,25 +119,25 @@ func handleMessage(bot *tgbotapi.BotAPI, message *tgbotapi.Message) {
 
 	case IdleState:
 		response.Text = "create or join room"
-		response.ReplyMarkup = getKeyboard(playerptr.state)
+		response.ReplyMarkup = getRoomKeyboard(playerptr.state)
 
 	case JoiningRoomState:
 		if addPlayerToRoom(playerptr, message.Text) {
 			sendMessageToOwner(bot, getOwnerByPLayer(playerptr), "join", playerptr)
-			response.ReplyMarkup = getKeyboard(playerptr.state)
+			response.ReplyMarkup = getRoomKeyboard(playerptr.state)
 			response.Text = fmt.Sprintf("you joined room %s", message.Text)
 		} else {
 			response.Text = "incorrect try again"
-			response.ReplyMarkup = getKeyboard(playerptr.state)
+			response.ReplyMarkup = getRoomKeyboard(playerptr.state)
 		}
 
 	case InRoomIdleState:
 		response.Text = "ready to play?"
-		response.ReplyMarkup = getKeyboard(playerptr.state)
+		response.ReplyMarkup = getRoomKeyboard(playerptr.state)
 
 	case InRoomReadyState:
 		response.Text = "wait for game to start"
-		response.ReplyMarkup = getKeyboard(playerptr.state)
+		response.ReplyMarkup = getRoomKeyboard(playerptr.state)
 	}
 
 	if response.Text != "" {

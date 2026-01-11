@@ -10,13 +10,39 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
+// GAME SETUP //
+
+func getRoomKeyboard(state State) (buttons tgbotapi.InlineKeyboardMarkup) {
+	switch state {
+	case IdleState:
+		createRoomButton := tgbotapi.NewInlineKeyboardButtonData("create", BtnCreate)
+		joinRoomButton := tgbotapi.NewInlineKeyboardButtonData("join", BtnJoin)
+		buttons = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(createRoomButton, joinRoomButton))
+
+	case JoiningRoomState:
+		leaveRoomButton := tgbotapi.NewInlineKeyboardButtonData("cancel", BtnLeave)
+		buttons = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(leaveRoomButton))
+
+	case InRoomIdleState:
+		readyButton := tgbotapi.NewInlineKeyboardButtonData("ready", BtnReady)
+		leaveRoomButton := tgbotapi.NewInlineKeyboardButtonData("leave", BtnLeave)
+		buttons = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(readyButton, leaveRoomButton))
+
+	case InRoomReadyState:
+		leaveRoomButton := tgbotapi.NewInlineKeyboardButtonData("leave", BtnLeave)
+		buttons = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(leaveRoomButton))
+	}
+
+	return
+}
+
 func getOrCreatePlayerById(playerId int64, playerName string) *Player {
 	for i := range players {
 		if players[i].id == playerId {
 			return &players[i]
 		}
 	}
-	players = append(players, Player{playerId, playerName, 0, IdleState, 0})
+	players = append(players, Player{playerId, playerName, 0, IdleState, 0, false, false})
 	return &players[len(players)-1]
 }
 
@@ -42,27 +68,164 @@ func getOwnerByPLayer(playerptr *Player) *Player {
 	return nil
 }
 
-func getKeyboard(state State) (buttons tgbotapi.InlineKeyboardMarkup) {
-	switch state {
-	case IdleState:
-		createRoomButton := tgbotapi.NewInlineKeyboardButtonData("create", BtnCreate)
-		joinRoomButton := tgbotapi.NewInlineKeyboardButtonData("join", BtnJoin)
-		buttons = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(createRoomButton, joinRoomButton))
+// IN GAME //
 
-	case JoiningRoomState:
-		leaveRoomButton := tgbotapi.NewInlineKeyboardButtonData("cancel", BtnLeave)
-		buttons = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(leaveRoomButton))
-
-	case InRoomIdleState:
-		readyButton := tgbotapi.NewInlineKeyboardButtonData("ready", BtnReady)
-		leaveRoomButton := tgbotapi.NewInlineKeyboardButtonData("leave", BtnLeave)
-		buttons = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(readyButton, leaveRoomButton))
-
-	case InRoomReadyState:
-		leaveRoomButton := tgbotapi.NewInlineKeyboardButtonData("leave", BtnLeave)
-		buttons = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(leaveRoomButton))
+func inGameAction(bot *tgbotapi.BotAPI, playerptr *Player, callback *tgbotapi.CallbackQuery) {
+	if playerptr.didAction == true || playerptr.alive == false {
+		return
 	}
 
+	ownerptr := getOwnerByPLayer(playerptr)
+	playersInRoom := getPlayersByOwner(ownerptr)
+	var targetPlayer *Player
+	for i := range playersInRoom {
+		if playersInRoom[i].name == callback.Data {
+			targetPlayer = playersInRoom[i]
+		}
+	}
+
+	if targetPlayer == nil {
+		return
+	}
+
+	roomptr := getRoomByPlayer(playerptr)
+	isNight := roomptr.turn%2 == 1
+
+	if isNight {
+		switch playerptr.role {
+		case MafiaRole:
+			var playerSlice []*Player
+			playerSlice = append(playerSlice, targetPlayer)
+			roomptr.actedUpon = append(roomptr.actedUpon, targetPlayer)
+			kill(playerSlice)
+			playerptr.didAction = true
+		}
+	} else {
+		playerptr.didAction = true
+		bot.Send(tgbotapi.NewMessage(playerptr.id, fmt.Sprintf("You voted for %s", targetPlayer.name)))
+		roomptr.actedUpon = append(roomptr.actedUpon, targetPlayer)
+	}
+
+	if canTurnEnd(ownerptr) {
+		nextTurn(bot, ownerptr)
+	}
+}
+
+func playerSliceToStr(playerSLice []*Player) (playerStr string) {
+	for i := range playerSLice {
+		playerStr = fmt.Sprint(playerStr, playerSLice[i].name)
+	}
+	return
+}
+
+func calculateResults(bot *tgbotapi.BotAPI, ownerptr *Player) {
+	roomptr := getRoomByPlayer(ownerptr)
+	playersInRoom := getPlayersByOwner(ownerptr)
+
+	isNight := roomptr.turn%2 == 1
+
+	if isNight {
+		diedThisNight := roomptr.actedUpon
+		sendMessageToAll(bot, playersInRoom, fmt.Sprintf("died this night %s", playerSliceToStr(diedThisNight)), nil)
+	} else {
+		votedOut := roomptr.actedUpon
+		sendMessageToAll(bot, votedOut, fmt.Sprintf("votedOut: %d", playerSliceToStr(votedOut)), nil)
+	}
+}
+
+func canTurnEnd(ownerptr *Player) bool {
+	playersInRoom := getPlayersByOwner(ownerptr)
+	for i := range playersInRoom {
+		if playersInRoom[i].alive && playersInRoom[i].didAction == false {
+			return false
+		}
+	}
+	return true
+}
+
+func killVoted(votes []*Player, ownerptr *Player) {
+	repeats := make(map[*Player]int)
+	for _, i := range votes {
+		repeats[i]++
+	}
+	maxRepeats := 0
+	var mostRepeated *Player
+	for i, j := range repeats {
+		if j > maxRepeats {
+			maxRepeats = j
+			mostRepeated = i
+		}
+	}
+	if mostRepeated != nil {
+		playersToKill := []*Player{mostRepeated}
+		roomptr := getRoomByPlayer(ownerptr)
+		roomptr.actedUpon = playersToKill
+		kill(playersToKill)
+	}
+}
+
+func nextTurn(bot *tgbotapi.BotAPI, ownerptr *Player) {
+	room := getRoomByPlayer(ownerptr)
+	if room.turn%2 == 0 {
+		killVoted(room.actedUpon, ownerptr)
+	}
+	calculateResults(bot, ownerptr)
+	room.turn++
+	room.actedUpon = []*Player{}
+
+	playersInRoom := getPlayersByOwner(ownerptr)
+	for i := range playersInRoom {
+		playersInRoom[i].didAction = false
+	}
+
+	if room.turn%2 == 1 {
+		startNight(bot, ownerptr)
+	} else {
+		startDay(bot, ownerptr)
+	}
+}
+
+func getAlive(playersInRoom []*Player) (alivePlayers []*Player) {
+	for i := range playersInRoom {
+		alivePlayers = append(alivePlayers, playersInRoom[i])
+	}
+	return
+}
+
+func startDay(bot *tgbotapi.BotAPI, ownerptr *Player) {
+	playersInRoom := getPlayersByOwner(ownerptr)
+	alivePlayers := getAlive(playersInRoom)
+	actionKeyboard := getGameKeyboard(alivePlayers)
+	sendMessageToAll(bot, playersInRoom, "choose who will die:", &actionKeyboard)
+}
+
+func startNight(bot *tgbotapi.BotAPI, ownerptr *Player) {
+	playersInRoom := getPlayersByOwner(ownerptr)
+	alivePlayers := getAlive(playersInRoom)
+	var mafiaPlayers, civilianPlayers []*Player
+
+	for i := range alivePlayers {
+		if alivePlayers[i].role == MafiaRole {
+			mafiaPlayers = append(mafiaPlayers, alivePlayers[i])
+			alivePlayers[i].didAction = false
+		} else if alivePlayers[i].role == CivilianRole {
+			alivePlayers[i].didAction = true
+			civilianPlayers = append(civilianPlayers, alivePlayers[i])
+		}
+	}
+
+	killKeyboard := getGameKeyboard(civilianPlayers)
+
+	sendMessageToAll(bot, mafiaPlayers, "choose who will die:", &killKeyboard)
+	sendMessageToAll(bot, civilianPlayers, "survive the night (just wait)", nil)
+}
+
+func getGameKeyboard(playerSlice []*Player) (buttons tgbotapi.InlineKeyboardMarkup) {
+	var buttonSlice []tgbotapi.InlineKeyboardButton
+	for i := range playerSlice {
+		buttonSlice = append(buttonSlice, tgbotapi.NewInlineKeyboardButtonData(playerSlice[i].name, playerSlice[i].name))
+	}
+	buttons = tgbotapi.NewInlineKeyboardMarkup(tgbotapi.NewInlineKeyboardRow(buttonSlice...))
 	return
 }
 
@@ -90,7 +253,6 @@ func getReadyCountByOwner(ownerptr *Player) string {
 }
 
 func canGameStart(ownerptr *Player) bool {
-
 	if getPlayerCountByOwner(ownerptr) < 4 {
 		return false
 	}
@@ -126,11 +288,12 @@ func getRolesByOwner(ownerptr *Player) (roles []Role) {
 		roles[i] = MafiaRole
 	}
 
-	rand.Seed(time.Now().UnixNano())
-	rand.Shuffle(len(roles), func(i, j int) {
+	source := rand.NewSource(time.Now().UnixNano())
+	r := rand.New(source)
+
+	r.Shuffle(len(roles), func(i, j int) {
 		roles[i], roles[j] = roles[j], roles[i]
 	})
-
 	return
 }
 
@@ -139,6 +302,18 @@ func assignRolesByOwner(ownerptr *Player) {
 	playersInRoom := getPlayersByOwner(ownerptr)
 	for i := range playersInRoom {
 		playersInRoom[i].role = roles[i]
+	}
+}
+
+func revive(playerSlice []*Player) {
+	for i := range playerSlice {
+		playerSlice[i].alive = true
+	}
+}
+
+func kill(playerSlice []*Player) {
+	for i := range playerSlice {
+		playerSlice[i].alive = false
 	}
 }
 
@@ -156,6 +331,14 @@ func startGameByOwner(bot *tgbotapi.BotAPI, ownerptr *Player) {
 			log.Print(err)
 		}
 	}
+	for i := range rooms {
+		if rooms[i].id == ownerptr.id {
+			rooms[i].turn = 1
+		}
+	}
+	playersInRoom := getPlayersByOwner(ownerptr)
+	revive(playersInRoom)
+	startNight(bot, ownerptr)
 }
 
 func getPlayersByOwner(ownerptr *Player) (playersInRoom []*Player) {
@@ -167,12 +350,18 @@ func getPlayersByOwner(ownerptr *Player) (playersInRoom []*Player) {
 	return
 }
 
-func getSameMessagesToAll(ownerptr *Player, messageText string) (messages []tgbotapi.MessageConfig) {
-	playersInRoom := getPlayersByOwner(ownerptr)
-	for i := range playersInRoom {
-		messages = append(messages, tgbotapi.NewMessage(playersInRoom[i].id, messageText))
+func sendMessageToAll(bot *tgbotapi.BotAPI, playerSlice []*Player, messageText string, keyboardptr *tgbotapi.InlineKeyboardMarkup) {
+	var messages []tgbotapi.MessageConfig
+	for i := range playerSlice {
+		message := tgbotapi.NewMessage(playerSlice[i].id, messageText)
+		if keyboardptr != nil {
+			message.ReplyMarkup = *keyboardptr
+		}
+		messages = append(messages, message)
 	}
-	return messages
+	for i := range messages {
+		bot.Send(messages[i])
+	}
 }
 
 func getRoleMessagesToAll(ownerptr *Player) (messages []tgbotapi.MessageConfig) {
@@ -192,7 +381,7 @@ func getRoleMessagesToAll(ownerptr *Player) (messages []tgbotapi.MessageConfig) 
 
 func createRoom(playerptr *Player) *Room {
 	if (*playerptr).room == 0 {
-		rooms = append(rooms, Room{(*playerptr).id})
+		rooms = append(rooms, Room{(*playerptr).id, 0, nil})
 		(*playerptr).room = rooms[len(rooms)-1].id
 		(*playerptr).state = InRoomIdleState
 		return &rooms[len(rooms)-1]
@@ -221,7 +410,6 @@ func leaveRoom(playerptr *Player) {
 
 func changeStateToReady(playerptr *Player) {
 	(*playerptr).state = InRoomReadyState
-
 }
 
 func sendMessageToOwner(bot *tgbotapi.BotAPI, ownerptr *Player, messageType string, playerptr *Player) {
